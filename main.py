@@ -1,3 +1,4 @@
+from flag import data_flags
 import logging
 import aiogram.utils.markdown as md
 import jsonpickle as jsonpickle
@@ -11,7 +12,8 @@ from aiogram.utils import executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 my_URL = 'http://testapi.gram.tj/api/'
-token = "5150556649:AAEj1ZOic2mhbwfSIsT8lHMUnDkeUVhzPvQ"
+token = "5093577230:AAHFAG6U0U3AaGo1tgGC2eyRaxcjbQZbnS8"
+#token = "5150556649:AAEj1ZOic2mhbwfSIsT8lHMUnDkeUVhzPvQ"
 
 bot = Bot(token=token)
 dp = Dispatcher(bot, storage=MemoryStorage())
@@ -51,8 +53,6 @@ class new_order(StatesGroup):
     auto_type_id = State()
     pick_time = State()
     error = State()
-
-
 class reg(StatesGroup):
     name = State()
     number = State()
@@ -68,7 +68,9 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     logging.info('Cancelling state %r', current_state)
     await state.finish()
     await message.reply('Вы остановили все процессы.',  reply_markup=types.ReplyKeyboardRemove())
-
+@dp.message_handler(commands='test')
+async def test(message: types.Message):
+    await message.reply(f"{data_flags['TJ']['name']} : {data_flags['TJ']['emoji']}")
 #-----------------------------NEW-order--------------------------------------
 @dp.message_handler(commands='new')
 async def phone_(message: types.Message):
@@ -112,9 +114,8 @@ async def phone_(message: types.Message):
     await message.reply(
         f"Ваш номер телефона {phone}? Если нет введите свой номер телефона для связи с вами (например: +7**********).",
         reply_markup=keyboard)
-
 @dp.message_handler(state=new_order.phone_)
-async def new_order_1(message: types.Message):
+async def dop_phone(message: types.Message):
     global phone
     global phone_
     if message.text == 'Да':
@@ -130,9 +131,8 @@ async def new_order_1(message: types.Message):
     await message.reply(
         "Введите дополнительный номер телефона для связи с вами (например: +7**********).\nТак как это не обязательное поле вы можете его пропустить",
         reply_markup=keyboard)
-
 @dp.message_handler(state=new_order.dop_phone)
-async def new_order_2(message: types.Message):
+async def from_countries(message: types.Message):
     global dop_phone
     if message.text == 'Пропустить':
         dop_phone = 'null'
@@ -161,9 +161,8 @@ async def new_order_2(message: types.Message):
         *buttons,
     )
     await message.reply("Выберите страну отправителя", reply_markup=keyboard)
-
 @dp.message_handler(state=new_order.from_countries_id_)
-async def new_order_3(message: types.Message):
+async def from_city_id_(message: types.Message):
     from_countries = ''
     from_city_id = message.text
     for r in from_city_id:
@@ -185,7 +184,8 @@ async def new_order_3(message: types.Message):
     Header = {
         'Authorization': ttt,
     }
-    r = requests.get(f'{my_URL}cities', headers=Header)
+    Url_ = f'{my_URL}t-bot/{str(from_countries)[-1:1]}/cities'
+    r = requests.get(Url_, headers=Header)
     re = jsonpickle.decode(r.text)
     for i in re:
         buttons += [f"{i['id']}: {i['name']}"]
@@ -194,9 +194,8 @@ async def new_order_3(message: types.Message):
     )
     await new_order.next()
     await message.reply("Выберите город отправителя", reply_markup=keyboard)
-
 @dp.message_handler(state=new_order.from_city_id_)
-async def new_order_3(message: types.Message):
+async def to_countries_(message: types.Message):
     global from_city_id_
     from_city_id_ = ''
     from_city_id = message.text
@@ -228,9 +227,8 @@ async def new_order_3(message: types.Message):
         *buttons,
     )
     await message.reply(f"Выберите страну получателя.", reply_markup=keyboard)
-
 @dp.message_handler(state=new_order.to_countries_id_)
-async def new_order_4(message: types.Message):
+async def to_city_id_(message: types.Message):
     to_countries_ = message.text
     to_countries = ''
     for r in to_countries_:
@@ -252,7 +250,8 @@ async def new_order_4(message: types.Message):
     Header = {
         'Authorization': ttt,
     }
-    r = requests.get(f'{my_URL}cities', headers=Header)
+    Url_ = f'{my_URL}t-bot/{str(to_countries)[-1:1]}/cities'
+    r = requests.get(Url_, headers=Header)
     re = jsonpickle.decode(r.text)
     for i in re:
         buttons += [f"{i['id']}: {i['name']}"]
@@ -261,9 +260,8 @@ async def new_order_4(message: types.Message):
     )
     await new_order.next()
     await message.reply("Выберите город получателя.", reply_markup=keyboard)
-
 @dp.message_handler(state=new_order.to_city_id_)
-async def new_order_4(message: types.Message):
+async def amount_(message: types.Message):
     global to_city_id_
     to_city_id_ = ''
     to_city = message.text
@@ -274,16 +272,14 @@ async def new_order_4(message: types.Message):
             to_city_id_ += r
     await new_order.next()
     await message.reply("Стоимость заказа.\nНапример 123.45", reply_markup=types.ReplyKeyboardRemove())
-
 @dp.message_handler(state=new_order.amount_)
-async def new_order_5(message: types.Message):
+async def weight(message: types.Message):
     global amount_
     amount_ = message.text
     await new_order.next()
-    await message.reply("Введите объём вашего груза.", reply_markup=types.ReplyKeyboardRemove())
-
+    await message.reply("Введите объём вашего груза.\nНапример 123.45", reply_markup=types.ReplyKeyboardRemove())
 @dp.message_handler(state=new_order.weight)
-async def new_order_6(message: types.Message):
+async def cargo(message: types.Message):
     global weight
     if message.text == 'Пропустить':
         weight = 'null'
@@ -297,9 +293,8 @@ async def new_order_6(message: types.Message):
     )
     await message.reply("Введите тип вашего груза.\nТак как это не обязательное поле вы можете его пропустить",
                         reply_markup=keyboard)
-
 @dp.message_handler(state=new_order.cargo)
-async def new_order_7(message: types.Message):
+async def type_payment(message: types.Message):
     global cargo
     if message.text == 'Пропустить':
         cargo = 'null'
@@ -307,21 +302,31 @@ async def new_order_7(message: types.Message):
         cargo = message.text
     await new_order.next()
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    buttons = ["Пропустить"]
+    buttons = []
+    buttons += ["0: Предоплата"]
+    buttons += ["1: Постоплата"]
+    buttons += ["2: 50 %"]
+    buttons += ["3: Наличными"]
+    buttons += ["Пропустить"]
     keyboard.add(
         *buttons,
     )
     await message.reply(
         "Введите тип оплаты вашего заказа.\nТак как это не обязательное поле вы можете его пропустить",
         reply_markup=keyboard)
-
 @dp.message_handler(state=new_order.type_payment)
-async def new_order_8(message: types.Message):
+async def performer_count(message: types.Message):
     global type_payment
+    type_payment = ''
     if message.text == 'Пропустить':
         type_payment = 'null'
     else:
-        type_payment = message.text
+        type_paym = message.text
+        for r in type_paym:
+            if r == ':':
+                break
+            else:
+                type_payment += r
     await new_order.next()
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     buttons = ["Пропустить"]
@@ -331,9 +336,8 @@ async def new_order_8(message: types.Message):
     await message.reply(
         "Введите колличество водителей нужных для выполнения вашего заказа.\nТак как это не обязательное поле вы можете его пропустить",
         reply_markup=keyboard)
-
 @dp.message_handler(state=new_order.performer_count)
-async def new_order_9(message: types.Message):
+async def urgent(message: types.Message):
     global performer_count
     if message.text == 'Пропустить':
         performer_count = 'null'
@@ -347,14 +351,13 @@ async def new_order_9(message: types.Message):
     )
     await message.reply("Ваш заказ срочный?.",
                         reply_markup=keyboard)
-
 @dp.message_handler(state=new_order.urgent)
-async def new_order_10(message: types.Message):
+async def comment(message: types.Message):
     global urgent
     if message.text == 'Нет':
         urgent = 'null'
     else:
-        urgent = 'null'
+        urgent = '1'
     await new_order.next()
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     buttons = ["Пропустить"]
@@ -364,9 +367,8 @@ async def new_order_10(message: types.Message):
     await message.reply(
         "Введите коментарий к вашему заказу.\nТак как это не обязательное поле вы можете его пропустить",
         reply_markup=keyboard)
-
 @dp.message_handler(state=new_order.comment)
-async def new_order_11(message: types.Message):
+async def auto_type_id(message: types.Message):
     global comment
     if message.text == 'Пропустить':
         comment = 'null'
@@ -386,7 +388,7 @@ async def new_order_11(message: types.Message):
     Header = {
         'Authorization': ttt,
     }
-    r = requests.get(f'{my_URL}cities', headers=Header)
+    r = requests.get(f'{my_URL}t-bot/type-auto', headers=Header)
     re = jsonpickle.decode(r.text)
     for i in re:
         buttons += [f"{i['id']}: {i['name']}"]
@@ -397,14 +399,19 @@ async def new_order_11(message: types.Message):
     )
     await message.reply("Выберите вид автомобиля нужного для перевлзки вашего заказа.\nТак как это не обязательное поле вы можете его пропустить",
                         reply_markup=keyboard)
-
 @dp.message_handler(state=new_order.auto_type_id)
-async def new_order_12(message: types.Message):
+async def pick_time(message: types.Message):
     global auto_type_id
+    auto_type_id = ''
     if message.text == 'Пропустить':
         auto_type_id = 'null'
     else:
-        auto_type_id = message.text
+        to_city = message.text
+        for r in to_city:
+            if r == ':':
+                break
+            else:
+                auto_type_id += r
     await new_order.next()
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     buttons = ["Пропустить"]
@@ -414,9 +421,8 @@ async def new_order_12(message: types.Message):
     await message.reply(
         "Введите крайний срок отправки груза (например: 2022-01-12 15:15 ).\nТак как это не обязательное поле вы можете его пропустить",
         reply_markup=keyboard)
-
 @dp.message_handler(state=new_order.pick_time)
-async def new_order_13(message: types.Message):
+async def view(message: types.Message):
     global pick_time
     if message.text == 'Пропустить':
         pick_time = 'null'
@@ -445,28 +451,33 @@ async def new_order_13(message: types.Message):
     }
     Data = str(Data).replace("'null'", 'null')
     Data = str(Data).replace("'", '"')
-    Data = str(Data).replace('", "amount": "', ', Цена = ')
-    Data = str(Data).replace('", "weight": "', ', Объём = ')
-    Data = str(Data).replace('"dop_phone": null, ', "")
-    Data = str(Data).replace('"cargo": null, ', "")
-    Data = str(Data).replace('"type_payment": null, ', "")
-    Data = str(Data).replace('"performer_count": null, ', "")
-    Data = str(Data).replace('"urgent": null, ', "")
-    Data = str(Data).replace('"comment": null, ', "")
-    Data = str(Data).replace('"auto_type_id": null, ', "")
-    Data = str(Data).replace(', "pick_time": null', "")
-    Data = str(Data).replace('", "cargo":', ', Тип вашего груза: ')
-    Data = str(Data).replace(',', '\n')
+    Data = str(Data).replace('", "dop_phone": null, ', "")
+    Data = str(Data).replace('", "cargo": null, ', "")
+    Data = str(Data).replace('", "type_payment": null, ', "")
+    Data = str(Data).replace('", "performer_count": null, ', "")
+    Data = str(Data).replace('", "urgent": null, ', "")
+    Data = str(Data).replace('", "comment": null, ', "")
+    Data = str(Data).replace('", "auto_type_id": null, ', "")
+    Data = str(Data).replace('", "pick_time": null', "")
     Data = str(Data).replace('{"phone": "', 'Ваш номер телефона: ')
-    Data = str(Data).replace('", "to_city_id": "', ', Город получателя: ')
+    Data = str(Data).replace('"dop_phone": ', "Ваш дополнительный номер телефона: ")
     Data = str(Data).replace('"from_city_id": "', 'Город отправителя: ')
+    Data = str(Data).replace('"to_city_id": "', ', Город получателя: ')
+    Data = str(Data).replace('"amount": "', ', Цена = ')
+    Data = str(Data).replace('"weight": "', ', Объём = ')
+    Data = str(Data).replace('"cargo": , ', "Тип вашего груза: ")
+    Data = str(Data).replace('"type_payment":', "Тип оплаты:")
+    Data = str(Data).replace('"performer_count"', "Количество")
+    Data = str(Data).replace('"urgent":', "Срочный:")
+    Data = str(Data).replace('"comment":', "Коментарий к заказу:")
+    Data = str(Data).replace('"auto_type_id":', "Тип машины нужного для выполнения заказа:")
+    Data = str(Data).replace('"pick_time"', "Время отправки груза")
+    Data = str(Data).replace(',', '\n')
     Data = str(Data).replace('"}', '')
     await message.reply(f"{ Data }")
     await message.reply("Так выглядит ваш заказ.\nВсё верно?", reply_markup=keyboard)
-
-
 @dp.message_handler(state=new_order.error)
-async def new_order_14(message: types.Message):
+async def save(message: types.Message):
     global my_URL
     if message.text == 'Да':
         Data = {
@@ -497,6 +508,7 @@ async def new_order_14(message: types.Message):
         Data = str(Data).replace(', "amount": "', ', "amount": ')
         Data = str(Data).replace('", "weight": "', ', "weight": ')
         Data = str(Data).replace('", "cargo":', ', "cargo":')
+
         Data = str(Data).replace('"dop_phone": null, ', "")
         Data = str(Data).replace('"cargo": null, ', "")
         Data = str(Data).replace('"type_payment": null, ', "")
@@ -509,11 +521,11 @@ async def new_order_14(message: types.Message):
             'Authorization': ttt,
             'Content-Type': 'application/json',
         }
-        r = requests.post(f'{my_URL}t-bot/market-orders', headers=Header, data=Data)
+        r = requests.post(f'{my_URL}t-bot/market-orders', headers=Header, data=Data.encode('utf-8'))
         r = jsonpickle.decode(r.text)
         for i in r:
             if str(i) == 'errors':
-                await message.answer(f"Произошла ошибка. Проверьте свои данные и повторите попытку")
+                await message.answer(f"Произошла ошибка: {r['errors']}. Проверьте свои данные и повторите попытку.")
                 keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
                 buttons = ["Да"]
                 keyboard.add(
@@ -637,7 +649,7 @@ async def register_3(message: types.Message):
         r = jsonpickle.decode(r.text)
         for i in r:
             if str(i) == 'errors':
-                await message.answer(f"Произошла ошибка. Проверьте свои данные и повторите попытку")
+                await message.answer(f"Произошла ошибка: {r['errors']}. Проверьте свои данные и повторите попытку")
                 keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
                 buttons = ["Да"]
                 keyboard.add(
@@ -661,7 +673,7 @@ async def register_3(message: types.Message):
 #---------------------error-----------------------------------------------------
 @dp.message_handler()
 async def error(message: types.Message, state: FSMContext):
-    await message.reply("error",  reply_markup=types.ReplyKeyboardRemove())
+    await message.reply("/new",  reply_markup=types.ReplyKeyboardRemove())
 
 # Запуск бота
 if __name__ == "__main__":
