@@ -599,7 +599,7 @@ async def register_1(message: types.Message):
     await reg.next()
     await message.reply("Введите свой номер телефона для связи с вами (например: +7**********).",  reply_markup=types.ReplyKeyboardRemove())
 @dp.message_handler(state=reg.number)
-async def register_2(message, state: FSMContext):
+async def register_2(message):
     global phone
     phone = message.text
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -607,16 +607,7 @@ async def register_2(message, state: FSMContext):
     keyboard.add(
         *buttons,
     )
-    await bot.send_message(
-        message.chat.id,
-        md.text(
-            md.text('Вас зовут: ', (name)),
-            md.text('Ваш номер телефона: ', (phone)),
-            sep='\n',
-        ),
-        reply_markup=keyboard,
-        parse_mode=ParseMode.MARKDOWN,
-    )
+    await bot.send_message(message.chat.id, f'Вас зовут: {name}\nВаш номер телефона: {phone}', reply_markup=keyboard)
     await bot.send_message(
         message.chat.id,
         "Всё верно?"
