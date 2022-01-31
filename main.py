@@ -1,13 +1,12 @@
+import time
 from flag import data_flags
 import logging
-import aiogram.utils.markdown as md
 import jsonpickle as jsonpickle
 import requests as requests
 from aiogram import Bot, Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.types import ParseMode
 from aiogram.utils import executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
@@ -636,6 +635,7 @@ async def register_3(message: types.Message):
         }
         r = requests.post(f'{my_URL}t-bot/register-client', headers = Header, data = Data)
         if r.status_code == 200:
+            time.sleep(60)
             await message.answer(f"Поздравляем вы зарегистрировались.\nТеперь введите /new для оформления новых заказов.")
         r = jsonpickle.decode(r.text)
         for i in r:
