@@ -13,8 +13,8 @@ from aiogram.utils import executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 my_URL = 'http://testapi.gram.tj/api/'
-token = "5093577230:AAHFAG6U0U3AaGo1tgGC2eyRaxcjbQZbnS8"
-#token = "5150556649:AAEj1ZOic2mhbwfSIsT8lHMUnDkeUVhzPvQ"
+#token = "5093577230:AAHFAG6U0U3AaGo1tgGC2eyRaxcjbQZbnS8"
+token = "5150556649:AAEj1ZOic2mhbwfSIsT8lHMUnDkeUVhzPvQ"
 
 bot = Bot(token=token)
 dp = Dispatcher(bot, storage=MemoryStorage())
