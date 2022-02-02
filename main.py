@@ -1,18 +1,20 @@
 import time
+
+from aiogram.dispatcher.filters import Text
+
 from flag import data_flags
 import logging
 import jsonpickle as jsonpickle
 import requests as requests
 from aiogram import Bot, Dispatcher, types
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils import executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 my_URL = 'http://testapi.gram.tj/api/'
-#token = "5093577230:AAHFAG6U0U3AaGo1tgGC2eyRaxcjbQZbnS8"
-token = "5150556649:AAEj1ZOic2mhbwfSIsT8lHMUnDkeUVhzPvQ"
+token = "5093577230:AAHFAG6U0U3AaGo1tgGC2eyRaxcjbQZbnS8"
+#token = "5150556649:AAEj1ZOic2mhbwfSIsT8lHMUnDkeUVhzPvQ"
 
 bot = Bot(token=token)
 dp = Dispatcher(bot, storage=MemoryStorage())
@@ -69,7 +71,7 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     await message.reply('Вы остановили все процессы.',  reply_markup=types.ReplyKeyboardRemove())
 @dp.message_handler(commands='test')
 async def test(message: types.Message):
-    await message.reply(f"{data_flags['TJ']['name']} : {data_flags['TJ']['emoji']}")
+    await message.reply(f"{data_flags['RU']['name']} : {data_flags['RU']['emoji']}")
 #-----------------------------NEW-order--------------------------------------
 @dp.message_handler(commands='new')
 async def phone_(message: types.Message):
@@ -507,7 +509,6 @@ async def save(message: types.Message):
         Data = str(Data).replace(', "amount": "', ', "amount": ')
         Data = str(Data).replace('", "weight": "', ', "weight": ')
         Data = str(Data).replace('", "cargo":', ', "cargo":')
-
         Data = str(Data).replace('"dop_phone": null, ', "")
         Data = str(Data).replace('"cargo": null, ', "")
         Data = str(Data).replace('"type_payment": null, ', "")
@@ -538,6 +539,7 @@ async def save(message: types.Message):
                 await message.reply(
                     f"{r['message']}",
                     reply_markup=types.ReplyKeyboardRemove())
+                await state.finish()
     else:
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
         buttons = ["Да"]
@@ -637,6 +639,7 @@ async def register_3(message: types.Message):
         if r.status_code == 200:
             time.sleep(60)
             await message.answer(f"Поздравляем вы зарегистрировались.\nТеперь введите /new для оформления новых заказов.")
+            await state.finish()
         r = jsonpickle.decode(r.text)
         for i in r:
             if str(i) == 'errors':
