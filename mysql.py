@@ -10,7 +10,7 @@ def getConnection():
         cursorclass=pymysql.cursors.DictCursor
     )
     return connection
-connection = myconnutils.getConnection()
+connection = getConnection()
 print ("Connect successful!")
 sql = "Select * from message "
 try :
