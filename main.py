@@ -98,6 +98,7 @@ def vusers():
     results = cur.fetchall()
     id_ = {}
     chat_id_ = {}
+
     name_ = {}
     j = 0
     for res in results:
